@@ -1,10 +1,14 @@
-﻿using Prism;
+﻿using System;
+using System.Diagnostics;
+using Prism;
 using Prism.Ioc;
-using BokaRealmPoc.ViewModels;
 using BokaRealmPoc.Views;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Prism.DryIoc;
+using Realms;
+using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace BokaRealmPoc
@@ -23,14 +27,34 @@ namespace BokaRealmPoc
         protected override async void OnInitialized()
         {
             InitializeComponent();
+            
+            Session.Error += (sender, errorArgs) =>
+            {
+                var sessionException = (SessionException)errorArgs.Exception;
+                if (sessionException.ErrorCode.IsClientResetError())
+                {
+                    var clientResetException = (ClientResetException)errorArgs.Exception;
+                    //CloseRealmSafely();
+                    //SaveBackupRealmPath(clientResetException.BackupFilePath);
+                    clientResetException.InitiateClientReset();
+                }
+                else
+                {
+                    Debug.WriteLine($"SessionError ErrorCode | {sessionException?.ErrorCode}");
+                    Debug.WriteLine($"SessionError Message | {sessionException?.Message}");
+                    Debug.WriteLine($"SessionError InnerMessage | {sessionException?.InnerException?.Message}");
+                }
+            };
 
-            await NavigationService.NavigateAsync("NavigationPage/MainPage");
+            await NavigationService.NavigateAsync($"{nameof(NavigationPage)}/{nameof(LoginPage)}");
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterForNavigation<NavigationPage>();
+            containerRegistry.RegisterForNavigation<LoginPage>();
             containerRegistry.RegisterForNavigation<MainPage>();
+            containerRegistry.RegisterForNavigation<EditNotePage>();
         }
     }
 }

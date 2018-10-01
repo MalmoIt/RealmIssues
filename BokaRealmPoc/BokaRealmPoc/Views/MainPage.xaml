@@ -1,11 +1,105 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BokaRealmPoc.Views.MainPage"
-             Title="{Binding Title}">
+             Title="Liste">
+  <StackLayout>
+    <ListView ItemsSource="{Binding Notes}"
+              VerticalOptions="FillAndExpand"
+              HasUnevenRows="True"
+              IsRefreshing="{Binding IsLoading}"
+              SelectedItem="{Binding SelectedItem}"
+              IsPullToRefreshEnabled="False">
+      <ListView.ItemTemplate>
+        <DataTemplate>
+          <ViewCell>
+            <ViewCell.ContextActions>
+              <MenuItem IsDestructive="True"
+                        CommandParameter="{Binding .}"
+                        Clicked="OnDeleteTapped"/>
+            </ViewCell.ContextActions>
+            <Frame HasShadow="False"
+                   BackgroundColor="White"
+                   Margin="10"
+                   CornerRadius="0"
+                   Padding="10">
+              <StackLayout>
+                <!-- first row -->
+                <StackLayout Orientation="Horizontal"
+                             VerticalOptions="CenterAndExpand">
+                  <Image HeightRequest="20"
+                         WidthRequest="20"
+                         BackgroundColor="Yellow"
+                         HorizontalOptions="Start"
+                         VerticalOptions="Center" />
 
-    <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-        <Label Text="Welcome to Xamarin Forms and Prism!" />
+                  <Label Text="{Binding Note.ListTitle}"
+                         LineBreakMode="TailTruncation"
+                         VerticalOptions="Center"
+                         VerticalTextAlignment="Center"
+                         HorizontalOptions="StartAndExpand"
+                         FontSize="Medium" />
+                </StackLayout>
+
+                <!-- second row -->
+                <Label Text="Details"
+                       LineBreakMode="TailTruncation"
+                       FontSize="Small"
+                       HorizontalOptions="StartAndExpand"
+                       HorizontalTextAlignment="Start"
+                       VerticalOptions="CenterAndExpand" />
+
+                <!-- third row -->
+                <StackLayout Orientation="Horizontal"
+                             VerticalOptions="CenterAndExpand">
+                  <Label Text="12.12.12"
+                         TextColor="Black"
+                         FontSize="Small"
+                         FontAttributes="Italic"
+                         HorizontalOptions="StartAndExpand" />
+
+                  <Label IsVisible="True"
+                         Text="{Binding ImageCount}"
+                         FontSize="Small"
+                         HorizontalOptions="End"
+                         VerticalOptions="Center"
+                         TextColor="Gray" />
+                  <Image
+                    WidthRequest="20"
+                    HeightRequest="20"
+                    BackgroundColor="Red"
+                    HorizontalOptions="End"
+                    VerticalOptions="Center" />
+                </StackLayout>
+              </StackLayout>
+            </Frame>
+          </ViewCell>
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </ListView>
+
+    <StackLayout VerticalOptions="End">
+      <Label Text="{Binding Counter}"
+             TextColor="Black"
+             FontSize="Large" />
+      <Button Text="Add"
+              Margin="20"
+              Command="{Binding AddNoteCommand}"
+              VerticalOptions="Center"
+              HorizontalOptions="CenterAndExpand" />
+      <Button Text="Add many"
+              Margin="20"
+              Command="{Binding AddManyCommand}"
+              VerticalOptions="Center"
+              HorizontalOptions="CenterAndExpand" /> 
+      
+      <Button Text="Delete all"
+              Margin="20"
+              Command="{Binding DeleteAllCommand}"
+              VerticalOptions="Center"
+              HorizontalOptions="CenterAndExpand" />
     </StackLayout>
 
+  </StackLayout>
 </ContentPage>
