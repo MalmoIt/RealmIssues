@@ -7,6 +7,8 @@
   <StackLayout HorizontalOptions="FillAndExpand"
                VerticalOptions="CenterAndExpand"
                Margin="20">
+    <Entry Text="{Binding Username}" 
+           />
     <Button Text="Logg inn"
             Command="{Binding LoginCommand}" 
             HorizontalOptions="FillAndExpand"

@@ -10,6 +10,14 @@ namespace BokaRealmPoc.ViewModels
 {
     public class LoginPageViewModel : ViewModelBase
     {
+        private string _username = "andersMonday";
+
+        public string Username
+        {
+            get => _username;
+            set => SetProperty(ref _username, value);
+        }
+
         public DelegateCommand LoginCommand { get; set; }
         public DelegateCommand WipeCommand { get; set; }
 
@@ -21,7 +29,8 @@ namespace BokaRealmPoc.ViewModels
 
         private async void Wipe()
         {
-            await ResetUser();
+            if (string.IsNullOrEmpty(Username)) return;
+            await ResetUser(Username);
 
             var user = User.Current;
             var config = new FullSyncConfiguration(new Uri("/~/nordmannTwo", UriKind.Relative), user);
@@ -30,12 +39,13 @@ namespace BokaRealmPoc.ViewModels
 
         private async void Login()
         {
-            await ResetUser();
+            if (string.IsNullOrEmpty(Username)) return;
+            await ResetUser(Username);
             
             await NavigationService.NavigateAsync($"{nameof(MainPage)}");
         }
 
-        private async Task ResetUser()
+        private async Task ResetUser(string username)
         {
             try
             {
@@ -47,7 +57,10 @@ namespace BokaRealmPoc.ViewModels
                 }
                 if (User.Current != null) await User.Current.LogOutAsync();
 
-                var credentials = Credentials.Nickname("andersMonday");
+
+                //var credentials = Credentials.Nickname("andersMonday");
+                var credentials = Credentials.Nickname(username);
+                //var credentials = Credentials.Nickname("andersMondayAcl");
                 var user = await User.LoginAsync(credentials, new Uri("https://bokapoc.de1a.cloud.realm.io"));
             }
             catch (Exception e)

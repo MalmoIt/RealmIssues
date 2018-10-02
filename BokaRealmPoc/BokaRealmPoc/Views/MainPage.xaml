@@ -4,9 +4,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BokaRealmPoc.Views.MainPage"
              Title="Liste">
-  <StackLayout>
+  <Grid VerticalOptions="FillAndExpand">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Button Text="Get Notes"
+            IsVisible="{Binding ShowButton}"
+            Command="{Binding GetNotesCommand}"
+            VerticalOptions="Start"
+            HorizontalOptions="CenterAndExpand" />
     <ListView ItemsSource="{Binding Notes}"
-              VerticalOptions="FillAndExpand"
+              IsVisible="{Binding ShowList}"
+              Grid.Row="0"
+              IsGroupingEnabled="True"
+              VerticalOptions="Fill"
+              GroupDisplayBinding="{Binding Title}"
               HasUnevenRows="True"
               IsRefreshing="{Binding IsLoading}"
               SelectedItem="{Binding SelectedItem}"
@@ -79,27 +93,35 @@
       </ListView.ItemTemplate>
     </ListView>
 
-    <StackLayout VerticalOptions="End">
-      <Label Text="{Binding Counter}"
-             TextColor="Black"
-             FontSize="Large" />
+    <Label Text="{Binding Counter}"
+           Grid.Row="1"
+           HeightRequest="50"
+           TextColor="Black"
+           HorizontalOptions="CenterAndExpand"
+           VerticalOptions="Start"
+           FontSize="Large" />
+    <StackLayout VerticalOptions="End"
+                 HorizontalOptions="FillAndExpand"
+                 Grid.Row="2"
+                 Orientation="Horizontal">
       <Button Text="Add"
-              Margin="20"
               Command="{Binding AddNoteCommand}"
-              VerticalOptions="Center"
+              VerticalOptions="Start"
+              HorizontalOptions="CenterAndExpand" /> 
+      <Button Text="Add w/permission"
+              Command="{Binding AddPermissionNoteCommand}"
+              VerticalOptions="Start"
               HorizontalOptions="CenterAndExpand" />
       <Button Text="Add many"
-              Margin="20"
               Command="{Binding AddManyCommand}"
-              VerticalOptions="Center"
+              VerticalOptions="Start"
               HorizontalOptions="CenterAndExpand" /> 
       
-      <Button Text="Delete all"
+      <!--<Button Text="Delete all"
               Margin="20"
               Command="{Binding DeleteAllCommand}"
               VerticalOptions="Center"
-              HorizontalOptions="CenterAndExpand" />
+              HorizontalOptions="CenterAndExpand" />-->
     </StackLayout>
-
-  </StackLayout>
+  </Grid>
 </ContentPage>

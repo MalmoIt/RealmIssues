@@ -26,6 +26,10 @@ namespace BokaRealmPoc.Models
 
         [Backlink(nameof(Note.Lands))]
         public IQueryable<Note> Notes { get; }
+
+        public IList<Permission> Permissions { get; }
+
+        public DateTimeOffset DueDate { get; set; }
     }
 
     public class Note : RealmObject
@@ -101,5 +105,8 @@ namespace BokaRealmPoc.Models
         }
 
         public DateTimeOffset CreatedAt { get; set; }
+
+        public IList<Permission> Permissions { get; }
+        public DateTimeOffset DueDate { get; set; }
     }
 }
