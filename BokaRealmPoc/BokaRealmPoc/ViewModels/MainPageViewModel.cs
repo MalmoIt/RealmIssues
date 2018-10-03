@@ -52,6 +52,7 @@ namespace BokaRealmPoc.ViewModels
         private IDisposable _sessionToken;
         private bool _showButton = true;
         private bool _showList;
+        private IDisposable _sessionUploadToken;
         public DelegateCommand AddNoteCommand { get; set; }
         public DelegateCommand AddPermissionNoteCommand { get; set; }
         public DelegateCommand AddManyCommand { get; set; }
@@ -138,7 +139,8 @@ namespace BokaRealmPoc.ViewModels
 
             _sessionToken = session.GetProgressObservable(ProgressDirection.Download, ProgressMode.ReportIndefinitely)
                 .Subscribe(new PocSync());
-
+            _sessionUploadToken = session.GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely)
+                .Subscribe(new PocSync());
 
             var internalStopWatch = new Stopwatch();
             internalStopWatch.Start();
@@ -157,12 +159,12 @@ namespace BokaRealmPoc.ViewModels
 
                 if (Notes.Count > 0)
                 {
-                    Device.BeginInvokeOnMainThread(async () =>
-                    {
-                        await _pageDialogService.DisplayAlertAsync("Notater hentet",
-                            $"SubscribeForNotifications:{internalStopWatch.Elapsed.TotalSeconds} sekunder",
-                            "OK");
-                    });
+                    //Device.BeginInvokeOnMainThread(async () =>
+                    //{
+                    //    await _pageDialogService.DisplayAlertAsync("Notater hentet",
+                    //        $"SubscribeForNotifications:{internalStopWatch.Elapsed.TotalSeconds} sekunder",
+                    //        "OK");
+                    //});
                 }
                 
                 Debug.WriteLine($"SubscribeForNotifications: STOPWATCH ELAPSED {internalStopWatch.Elapsed.TotalSeconds}");
@@ -198,12 +200,12 @@ namespace BokaRealmPoc.ViewModels
 
                         if (Notes.Count > 0)
                         {
-                            Device.BeginInvokeOnMainThread(async () =>
-                            {
-                                await _pageDialogService.DisplayAlertAsync("Notater hentet",
-                                    $"PropertyChanged:{internalStopWatch.Elapsed.TotalSeconds} sekunder",
-                                    "OK");
-                            });
+                            //Device.BeginInvokeOnMainThread(async () =>
+                            //{
+                            //    await _pageDialogService.DisplayAlertAsync("Notater hentet",
+                            //        $"PropertyChanged:{internalStopWatch.Elapsed.TotalSeconds} sekunder",
+                            //        "OK");
+                            //});
                         }
 
                         Debug.WriteLine($"SubscriptionState.Complete | {subscription.Results?.Count()}");
@@ -231,12 +233,12 @@ namespace BokaRealmPoc.ViewModels
 
             if (Notes.Count > 0)
             {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await _pageDialogService.DisplayAlertAsync("Notater hentet",
-                        $"GetNotes:{internalStopWatch.Elapsed.TotalSeconds} sekunder",
-                        "OK");
-                });
+                //Device.BeginInvokeOnMainThread(async () =>
+                //{
+                //    await _pageDialogService.DisplayAlertAsync("Notater hentet",
+                //        $"GetNotes:{internalStopWatch.Elapsed.TotalSeconds} sekunder",
+                //        "OK");
+                //});
             }
 
             Debug.WriteLine($"GetNotes END OF METHOD: STOPWATCH ELAPSED {stopwatch.Elapsed.TotalSeconds}");
@@ -295,19 +297,27 @@ namespace BokaRealmPoc.ViewModels
                     var year = random.Next(2010, 2019);
                     var month = random.Next(1, 13);
                     var day = random.Next(1, 20);
-
-                    var landId = Guid.NewGuid().ToString();
-                    var land = new Land
-                    {
-                        Id = landId,
-                        Title = $"Land {landId.Substring(0, 4)}",
-                    };
-
+                    
                     var note = new Note
                     {
                         Id = Guid.NewGuid().ToString(),
                         Title = $"Test {i}",
                         DueDate = new DateTimeOffset(year, month, day, 1, 1, 1, TimeSpan.Zero)
+                    };
+
+                    var landId = Guid.NewGuid().ToString();
+
+                    var land = new Land
+                    {
+                        Id = landId,
+                        Title = $"Land {landId.Substring(0, 4)}"
+                    };
+
+                    var landNote = new LandNote
+                    {
+                        Id = $"{note.Id}+{land.Id}",
+                        Land = land,
+                        Note = note
                     };
 
                     var user = PermissionUser.Get(_realm, User.Current.Identity);
@@ -322,9 +332,10 @@ namespace BokaRealmPoc.ViewModels
                     permission.CanQuery = true;
 
                     note.Permissions.Add(permission);
+                    landNote.Permissions.Add(permission);
                     land.Permissions.Add(permission);
 
-                    note.Lands.Add(land);
+                    note.Lands.Add(landNote);
 
                     _realm.Add(note);
                 }

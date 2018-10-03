@@ -30,6 +30,7 @@ namespace BokaRealmPoc
             
             Session.Error += (sender, errorArgs) =>
             {
+                var session = (Session) sender;
                 var sessionException = (SessionException)errorArgs.Exception;
                 if (sessionException.ErrorCode.IsClientResetError())
                 {
@@ -44,6 +45,10 @@ namespace BokaRealmPoc
                     Debug.WriteLine($"SessionError Message | {sessionException?.Message}");
                     Debug.WriteLine($"SessionError InnerMessage | {sessionException?.InnerException?.Message}");
                 }
+
+                
+
+
             };
 
             await NavigationService.NavigateAsync($"{nameof(NavigationPage)}/{nameof(LoginPage)}");
@@ -55,6 +60,7 @@ namespace BokaRealmPoc
             containerRegistry.RegisterForNavigation<LoginPage>();
             containerRegistry.RegisterForNavigation<MainPage>();
             containerRegistry.RegisterForNavigation<EditNotePage>();
+            containerRegistry.RegisterForNavigation<AddLandPage>();
         }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using BokaRealmPoc.Models;
+using BokaRealmPoc.Views;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation;
 using Realms;
 using Realms.Sync;
+using Xamarin.Forms;
 
 namespace BokaRealmPoc.ViewModels
 {
@@ -17,17 +20,28 @@ namespace BokaRealmPoc.ViewModels
 	    public Note Note
 	    {
 	        get => _note;
-	        set => SetProperty(ref _note, value);
+	        set
+	        {
+	            SetProperty(ref _note, value);
+
+	            if (value == null) return;
+
+	            Title = value.Title;
+	        }
 	    }
 
 	    public DelegateCommand SaveCommand { get; set; }
+	    public DelegateCommand AddLandCommand { get; set; }
 
-	    public EditNotePageViewModel(INavigationService navigationService) : base(navigationService)
+        public EditNotePageViewModel(INavigationService navigationService) : base(navigationService)
 	    {
-	        _configuration = new FullSyncConfiguration(new Uri("/~/nordmannTwo", UriKind.Relative));
-
 	        SaveCommand = new DelegateCommand(Save);
+	        AddLandCommand = new DelegateCommand(AddLand);
+	    }
 
+	    private async void AddLand()
+	    {
+	        await NavigationService.NavigateAsync($"{nameof(AddLandPage)}?noteId={_note.Id}");
 	    }
 
 	    private async void Save()
@@ -47,12 +61,21 @@ namespace BokaRealmPoc.ViewModels
 
         public override async void OnNavigatingTo(NavigationParameters parameters)
         {
-            var realm = await Realm.GetInstanceAsync(_configuration);
+            var realm = Realm.GetInstance();
 
             var noteId = (string) parameters["noteId"];
 
             Note = realm.Find<Note>(noteId);
 
+            Note.PropertyChanged += (sender, args) =>
+            {
+                if (sender != null && sender.GetType() == typeof(Note))
+                {
+                    var note = (Note) sender;
+                    Note = note;
+                }
+            };
+            
             Title = Note.Title;
         }
     }

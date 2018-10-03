@@ -5,6 +5,11 @@
              prism:ViewModelLocator.AutowireViewModel="True"
              x:Class="BokaRealmPoc.Views.EditNotePage"
              Title="{Binding Title}">
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Lands"
+                 Priority="1"
+                 Command="{Binding AddLandCommand}" />
+  </ContentPage.ToolbarItems>
   <StackLayout VerticalOptions="StartAndExpand">
     <Entry Placeholder="Title"
            Text="{Binding Title}" />

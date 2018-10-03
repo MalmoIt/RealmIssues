@@ -33,8 +33,8 @@ namespace BokaRealmPoc.ViewModels
             await ResetUser(Username);
 
             var user = User.Current;
-            var config = new FullSyncConfiguration(new Uri("/~/nordmannTwo", UriKind.Relative), user);
-            Realm.DeleteRealm(config);
+            RealmConfiguration.DefaultConfiguration = new QueryBasedSyncConfiguration(user: user);
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
         }
 
         private async void Login()
@@ -68,7 +68,6 @@ namespace BokaRealmPoc.ViewModels
                 Console.WriteLine(e);
                 throw;
             }
-
         }
     }
 }
