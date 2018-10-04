@@ -5,8 +5,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using BokaRealmPoc.Models;
 using BokaRealmPoc.Views;
 using Prism.Commands;
@@ -14,7 +12,6 @@ using Prism.Navigation;
 using Prism.Services;
 using Realms;
 using Realms.Sync;
-using Xamarin.Forms;
 
 namespace BokaRealmPoc.ViewModels
 {
@@ -110,8 +107,6 @@ namespace BokaRealmPoc.ViewModels
             var user = User.Current;
             ////_configuration = new FullSyncConfiguration(new Uri("/~/nordmannTwo", UriKind.Relative), user);
             //////_configuration = new QueryBasedSyncConfiguration(new Uri("/boka-realm", UriKind.Relative));
-
-            //var serverURL = new System.Uri("realms://bokapoc.de1a.cloud.realm.io");
 
             RealmConfiguration.DefaultConfiguration = new QueryBasedSyncConfiguration(user: user);
 
@@ -335,7 +330,7 @@ namespace BokaRealmPoc.ViewModels
                     landNote.Permissions.Add(permission);
                     land.Permissions.Add(permission);
 
-                    note.Lands.Add(landNote);
+                    note.LandNotes.Add(landNote);
 
                     _realm.Add(note);
                 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BokaRealmPoc.Models;
 using BokaRealmPoc.Views;
 using Prism.Commands;
 using Prism.Navigation;
@@ -10,7 +11,7 @@ namespace BokaRealmPoc.ViewModels
 {
     public class LoginPageViewModel : ViewModelBase
     {
-        private string _username = "andersMonday";
+        private string _username = "andersTuesdayAdmin";
 
         public string Username
         {
@@ -34,7 +35,17 @@ namespace BokaRealmPoc.ViewModels
 
             var user = User.Current;
             RealmConfiguration.DefaultConfiguration = new QueryBasedSyncConfiguration(user: user);
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+
+            var realm = Realm.GetInstance();
+
+            realm.Write(() =>
+            {
+                realm.RemoveAll<Note>();
+                realm.RemoveAll<LandNote>();
+                realm.RemoveAll<Land>();
+            });
+
+            //Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
         }
 
         private async void Login()
@@ -59,7 +70,7 @@ namespace BokaRealmPoc.ViewModels
 
 
                 //var credentials = Credentials.Nickname("andersMonday");
-                var credentials = Credentials.Nickname(username);
+                var credentials = Credentials.Nickname(username, true);
                 //var credentials = Credentials.Nickname("andersMondayAcl");
                 var user = await User.LoginAsync(credentials, new Uri("https://bokapoc.de1a.cloud.realm.io"));
             }

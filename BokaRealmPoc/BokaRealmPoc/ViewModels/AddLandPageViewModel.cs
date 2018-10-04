@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using BokaRealmPoc.Models;
 using Prism.Commands;
-using Prism.Mvvm;
 using Prism.Navigation;
 using Realms;
 using Realms.Sync;
@@ -16,14 +14,16 @@ namespace BokaRealmPoc.ViewModels
 {
 	public class AddLandPageViewModel : ViewModelBase
 	{
-	    private List<LandNoteViewModel> _lands;
+	    private List<LandViewModel> _lands;
 	    private IDisposable _token;
 	    private Note _note;
+	    private IDisposable _landNoteToken;
+	    private List<LandNote> _landNotes;
 
 	    public DelegateCommand AddLandCommand { get; set; }
 	    public DelegateCommand AddManyLandsCommand { get; set; }
 
-	    public List<LandNoteViewModel> Lands
+	    public List<LandViewModel> Lands
 	    {
 	        get => _lands;
 	        set => SetProperty(ref _lands, value);
@@ -107,7 +107,7 @@ namespace BokaRealmPoc.ViewModels
 	            Debug.WriteLine($"Note changed {args.PropertyName}");
 	        };
   
-            _token = realm.All<LandNote>().SubscribeForNotifications((sender, changes, error) =>
+            _token = realm.All<Land>().SubscribeForNotifications((sender, changes, error) =>
             {
                 Debug.WriteLine($"SubscribeForNotifications NewModifiedIndices: {changes?.NewModifiedIndices?.Length}");
                 Debug.WriteLine($"SubscribeForNotifications DeletedIndices: {changes?.DeletedIndices?.Length}");
@@ -115,15 +115,30 @@ namespace BokaRealmPoc.ViewModels
                 Debug.WriteLine($"SubscribeForNotifications ModifiedIndices: {changes?.ModifiedIndices?.Length}");
                 Debug.WriteLine($"SubscribeForNotifications Moves: {changes?.Moves?.Length}");
 
-                Lands = new List<LandNoteViewModel>(realm.All<LandNote>().ToList().Select(x => new LandNoteViewModel(x.Id, x.Land.Title)));
+                //Lands = new List<LandNoteViewModel>(realm.All<Land>().ToList().Select(x => new LandNoteViewModel(x.Id, x.Title)));
+
+                UpdateSelectedLands();
+            });
+
+	        _landNoteToken = realm.All<LandNote>().SubscribeForNotifications((sender, changes, error) =>
+            {
+                Debug.WriteLine($"SubscribeForNotifications NewModifiedIndices: {changes?.NewModifiedIndices?.Length}");
+                Debug.WriteLine($"SubscribeForNotifications DeletedIndices: {changes?.DeletedIndices?.Length}");
+                Debug.WriteLine($"SubscribeForNotifications InsertedIndices: {changes?.InsertedIndices?.Length}");
+                Debug.WriteLine($"SubscribeForNotifications ModifiedIndices: {changes?.ModifiedIndices?.Length}");
+                Debug.WriteLine($"SubscribeForNotifications Moves: {changes?.Moves?.Length}");
+
+                //Lands = new List<LandNoteViewModel>(realm.All<Land>().ToList().Select(x => new LandNoteViewModel(x.Id, x.Title)));
 
                 UpdateSelectedLands();
             });
 
             //Notes = new ObservableCollection<NoteViewModel>(_realm.All<Note>().ToList().Select(x => new NoteViewModel(x)));
-	        Lands = new List<LandNoteViewModel>(realm.All<LandNote>().ToList().Select(x => new LandNoteViewModel(x.Id, x.Land.Title)));
+	        //Lands = new List<LandNoteViewModel>(realm.All<Land>().ToList().Select(x => new LandNoteViewModel(x.Id, x.Title)));
+
 	        UpdateSelectedLands();
-            var subscription = realm.All<LandNote>().Subscribe();
+            var subscription = realm.All<Land>().Subscribe();
+            var subscriptionLandNote = realm.All<LandNote>().Subscribe();
             
             subscription.PropertyChanged += (sender, args) =>
             {
@@ -140,7 +155,38 @@ namespace BokaRealmPoc.ViewModels
                         break;
                     case SubscriptionState.Complete:
 
-                        Lands = new List<LandNoteViewModel>(realm.All<LandNote>().ToList().Select(x => new LandNoteViewModel(x.Id, x.Land.Title)));
+                        //Lands = new List<LandViewModel>(realm.All<Land>().ToList().Select(x => new LandViewModel(x.Id, x.Title)));
+                        UpdateSelectedLands();
+                        Debug.WriteLine($"SubscriptionState.Complete | {subscription.Results?.Count()}");
+                        // The subscription has been processed by the server and all objects
+                        // matching the query are in the local Realm
+                        break;
+                    case SubscriptionState.Invalidated:
+                        Debug.WriteLine($"SubscriptionState.Invalidated | {subscription.Results?.Count()}");
+                        // The subscription has been removed
+                        break;
+                    case SubscriptionState.Error:
+                        Debug.WriteLine($"SubscriptionState.Error | {subscription.Results?.Count()}");
+                        // An error occurred while processing the subscription
+                        var error = subscription.Error;
+                        break;
+                }
+            };
+	        subscriptionLandNote.PropertyChanged += (sender, args) =>
+            {
+                switch (subscription.State)
+                {
+                    case SubscriptionState.Creating:
+                        Debug.WriteLine($"SubscriptionState.Creating | {subscription.Results?.Count()}");
+                        // The subscription has not yet been written to the Realm
+                        break;
+                    case SubscriptionState.Pending:
+                        Debug.WriteLine($"SubscriptionState.Pending | {subscription.Results?.Count()}");
+                        // The subscription has been written to the Realm and is waiting
+                        // to be processed by the server
+                        break;
+                    case SubscriptionState.Complete:
+                        //Lands = new List<LandNoteViewModel>(realm.All<Land>().ToList().Select(x => new LandNoteViewModel(x.Id, x.Title)));
                         UpdateSelectedLands();
                         Debug.WriteLine($"SubscriptionState.Complete | {subscription.Results?.Count()}");
                         // The subscription has been processed by the server and all objects
@@ -161,37 +207,47 @@ namespace BokaRealmPoc.ViewModels
 
 	    private void UpdateSelectedLands()
 	    {
-	        foreach (var noteLand in _note.Lands)
+	        var realm = Realm.GetInstance();
+
+	        var lands = new List<LandViewModel>(realm.All<Land>().ToList().Select(x => new LandViewModel(x.Id, x.Title)));
+	        _landNotes = realm.All<LandNote>().ToList();
+
+            foreach (var noteLand in _note.LandNotes)
 	        {
-	            foreach (var landViewModel in Lands)
+	            foreach (var landViewModel in lands)
 	            {
-	                if (noteLand.Id == landViewModel.Id)
+	                if (noteLand.Land.Id == landViewModel.Id)
 	                {
 	                    landViewModel.IsSelected = true;
 	                }
 	            }
 	        }
-        }
+
+	        Lands = lands.OrderByDescending(x => x.IsSelected).ToList();
+	    }
 
 	    public override void Destroy()
 	    {
             _token?.Dispose();
 	    }
 
-	    public void SelectedLand(LandNoteViewModel landNoteViewModel)
+	    public void SelectedLand(LandViewModel landViewModel)
 	    {
 	        var realm = Realm.GetInstance();
 
-	        var land = realm.Find<LandNote>(landNoteViewModel.Id);
+	        var land = realm.Find<Land>(landViewModel.Id);
+            var landNote = realm.All<LandNote>().FirstOrDefault(x => x.Land == land);
 
-	        if (landNoteViewModel.IsSelected)
+	        if (landViewModel.IsSelected &&
+	            landNote != null)
 	        {
                 // Remove
 	            realm.Write(() =>
 	            {
-	                if (_note.Lands.Contains(land))
+	                if (_note.LandNotes.Contains(landNote))
 	                {
-	                    _note.Lands.Remove(land);
+	                    _note.LandNotes.Remove(landNote);
+	                    realm.Remove(landNote);
 	                }
 	            });
             }
@@ -200,16 +256,24 @@ namespace BokaRealmPoc.ViewModels
                 // Add
 	            realm.Write(() =>
 	            {
+	                var newLandNote = new LandNote
+	                {
+	                    Id = $"{_note.Id}+{land.Id}",
+	                    Land = land,
+	                    Note = _note
+	                };
 
-	                _note.Lands.Add(land);
+	                _note.LandNotes.Add(newLandNote);
 	            });
             }
 
-	        landNoteViewModel.IsSelected = !landNoteViewModel.IsSelected;
+	        landViewModel.IsSelected = !landViewModel.IsSelected;
+
+	        Lands = Lands.OrderByDescending(x => x.IsSelected).ToList();
 	    }
 	}
 
-    public class LandNoteViewModel : INotifyPropertyChanged
+    public class LandViewModel : INotifyPropertyChanged
     {
         private bool _isSelected;
         public string Id { get; }
@@ -225,7 +289,7 @@ namespace BokaRealmPoc.ViewModels
             }
         }
 
-        public LandNoteViewModel(string id, string title)
+        public LandViewModel(string id, string title)
         {
             Id = id;
             Title = title;

@@ -16,7 +16,7 @@ namespace BokaRealmPoc.Views
             if (listview == null || listview.SelectedItem == null) return;
 
             var vm = (AddLandPageViewModel) BindingContext;
-            vm.SelectedLand((LandNoteViewModel) e.SelectedItem);
+            vm.SelectedLand((LandViewModel) e.SelectedItem);
 
             listview.SelectedItem = null;
         }

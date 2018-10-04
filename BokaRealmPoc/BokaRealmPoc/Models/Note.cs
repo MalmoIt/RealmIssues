@@ -31,11 +31,14 @@ namespace BokaRealmPoc.Models
 
         public DateTimeOffset DueDate { get; set; }
     }
-
+    
     public class LandNote : RealmObject
     {
+        [PrimaryKey]
         public string Id { get; set; }
+
         public Land Land { get; set; }
+
         public Note Note { get; set; }
 
         public IList<Permission> Permissions { get; }
@@ -54,7 +57,7 @@ namespace BokaRealmPoc.Models
 
         public int NoteTypeId { get; set; }
 
-        public IList<LandNote> Lands { get; }
+        public IList<LandNote> LandNotes { get; }
 
         [Ignored]
         public string ImageCount
@@ -93,7 +96,7 @@ namespace BokaRealmPoc.Models
         }
         //                 title = $"{title} på {string.Join(", ", lands.Select(l => l.Name))}";
 
-        public string ListTitle => Lands != null && Lands.Any() ? $"{Title } på {string.Join(", ", Lands.Select(l => l.Land.Title))}" : Title;
+        public string ListTitle => LandNotes != null && LandNotes.Any() ? $"{Title } på {string.Join(", ", LandNotes.Select(l => l.Land.Title))}" : Title;
 
         public string IconSource
         {
